@@ -1,11 +1,18 @@
-const handler = async (m, {conn, text, command}) => {
-  const yh = global.loli;
-  const url = yh[Math.floor(Math.random() * yh.length)];
-  conn.sendMessage(m.chat, {image: {url: url}, caption: 'ʀᴀɴᴅᴏᴍ ʟᴏʟɪ - ɪѕ ᴄᴜᴛᴇ 🥺'}, {quoted: m});
+const handler = async (m, { conn, text, command }) => {
+ const datas = global
+ const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
+ const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+ const tradutor = _translate.plugins.random_loli
+
+ const yh = global.loli;
+ const url = yh[Math.floor(Math.random() * yh.length)];
+ conn.sendMessage(m.chat, { image: { url: url }, caption: tradutor.texto1 }, { quoted: m });
 };
-handler.command = /^(loli)$/i;
-handler.tags = ['anime'];
+
 handler.help = ['loli'];
+handler.tags = ['random'];
+handler.command = ['loli'];
+
 export default handler;
 
 global.loli = [

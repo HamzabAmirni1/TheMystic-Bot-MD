@@ -1,53 +1,90 @@
 import axios from 'axios';
-import fetch from 'node-fetch';
 import cheerio from 'cheerio';
-import {mediafiredl} from '@bochilteam/scraper';
+import { lookup } from 'mime-types';
 
 const handler = async (m, {conn, args, usedPrefix, command}) => {
-  if (!args[0]) throw `*[❗𝐈𝐍𝐅𝐎❗] 𝙸𝙽𝙶𝚁𝙴𝚂𝙴 𝚄𝙽 𝙴𝙽𝙻𝙰𝙲𝙴 𝚅𝙰𝙻𝙸𝙳𝙾 𝙳𝙴 𝙼𝙴𝙳𝙸𝙰𝙵𝙸𝚁𝙴, 𝙴𝙹𝙴𝙼𝙿𝙻𝙾: ${usedPrefix + command} https://www.mediafire.com/file/r0lrc9ir5j3e2fs/DOOM_v13_UNCLONE*`;
+  const datas = global
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`))
+  const tradutor = _translate.plugins.descargas_mediafire
+
+  if (!args[0]) throw `_*< DESCARGAS - MEDIAFIRE />*_\n\n*[ ℹ️ ] Ingrese un enlace de MediaFire.*\n\n*[ 💡 ] Ejemplo:* ${usedPrefix + command} http://www.mediafire.com/file/7a28wroqlhtfws7/FgsiRestAPI_1754243494124_fgsi_1754243490723.jpeg`;
+  
   try {
-    const resEX = await mediafiredl(args[0]);
-    const captionES = `
-*📓 𝙽𝙾𝙼𝙱𝚁𝙴:* ${resEX.filename}
-*📁 𝙿𝙴𝚂𝙾:* ${resEX.filesizeH}
-*📄 𝚃𝙸𝙿𝙾:* ${resEX.ext}
-
-*⏳ 𝙴𝚂𝙿𝙴𝚁𝙴 𝙴𝙽 𝙻𝙾 𝚀𝚄𝙴 𝙴𝙽𝚅𝙸𝙾 𝚂𝚄 𝙰𝚁𝙲𝙷𝙸𝚅𝙾. . . .* 
-`.trim();
-    m.reply(captionES);
-    await conn.sendFile(m.chat, resEX.url, resEX.filename, '', m, null, {mimetype: resEX.ext, asDocument: true});
-  } catch {
-    try {
-      const res = await mediafireDl(args[0]);
-      const {name, size, date, mime, link} = res;
-      const caption = `
-*📓 𝙽𝙾𝙼𝙱𝚁𝙴:* ${name}
-*📁 𝙿𝙴𝚂𝙾:* ${size}
-*📄 𝚃𝙸𝙿𝙾:* ${mime}
-
-*⏳ 𝙴𝚂𝙿𝙴𝚁𝙴 𝙴𝙽 𝙻𝙾 𝚀𝚄𝙴 𝙴𝙽𝚅𝙸𝙾 𝚂𝚄 𝙰𝚁𝙲𝙷𝙸𝚅𝙾. . . .* 
-`.trim();
-      await m.reply(caption);
-      await conn.sendFile(m.chat, link, name, '', m, null, {mimetype: mime, asDocument: true});
-    } catch {
-      await m.reply('*[❗𝐈𝐍𝐅𝐎❗] 𝙴𝚁𝚁𝙾𝚁, 𝙿𝙾𝚁 𝙵𝙰𝚅𝙾𝚁 𝚅𝚄𝙴𝙻𝚅𝙰 𝙰 𝙸𝙽𝚃𝙴𝙽𝚃𝙰𝚁𝙻𝙾*\n\n*- 𝙲𝙾𝚁𝚁𝙾𝙱𝙾𝚁𝙴 𝚀𝚄𝙴 𝙴𝙻 𝙴𝙽𝙻𝙰𝙲𝙴 𝚂𝙴𝙰 𝚂𝙸𝙼𝙸𝙻𝙰𝚁 𝙰:*\n*◉ https://www.mediafire.com/file/r0lrc9ir5j3e2fs/DOOM_v13_UNCLONE*');
-    }
+    const res = await mediafireDl(args[0]);
+    const {name, size, date, mime, link} = res;
+    const caption = `${tradutor.texto2[0]}\n\n${tradutor.texto2[1]} ${name}\n${tradutor.texto2[2]} ${size}\n${tradutor.texto2[3]} ${mime}\n\n${tradutor.texto2[4]}`.trim();
+    await m.reply(caption);
+    await conn.sendFile(m.chat, link, name, '', m, null, {mimetype: mime, asDocument: true});
+  } catch (error) {
+    console.error('Error en MediaFire:', error);
+    await m.reply(tradutor.texto3);
   }
 };
-handler.help = ['mediafire'].map((v) => v + ' <url>');
-handler.tags = ['downloader'];
+
 handler.command = /^(mediafire|mediafiredl|dlmediafire)$/i;
 export default handler;
 
 async function mediafireDl(url) {
-  const res = await axios.get(`https://www-mediafire-com.translate.goog/${url.replace('https://www.mediafire.com/', '')}?_x_tr_sl=en&_x_tr_tl=fr&_x_tr_hl=en&_x_tr_pto=wapp`);
-  const $ = cheerio.load(res.data);
-  const link = $('#downloadButton').attr('href');
-  const name = $('body > main > div.content > div.center > div > div.dl-btn-cont > div.dl-btn-labelWrap > div.promoDownloadName.notranslate > div').attr('title').replaceAll(' ', '').replaceAll('\n', '');
-  const date = $('body > main > div.content > div.center > div > div.dl-info > ul > li:nth-child(2) > span').text();
-  const size = $('#downloadButton').text().replace('Download', '').replace('(', '').replace(')', '').replace('\n', '').replace('\n', '').replace('                         ', '').replaceAll(' ', '');
-  let mime = '';
-  const rese = await axios.head(link);
-  mime = rese.headers['content-type'];
-  return {name, size, date, mime, link};
+  try {
+    if (!url.includes('www.mediafire.com')) throw new Error('URL de MediaFire inválida');
+    let res;
+    let $;
+    let link = null;
+    try {
+      res = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }});
+      $ = cheerio.load(res.data);
+      const downloadButton = $('#downloadButton');
+      link = downloadButton.attr('href');
+      if (!link || link.includes('javascript:void(0)')) { 
+        link = downloadButton.attr('data-href') || downloadButton.attr('data-url') || downloadButton.attr('data-link');
+        const scrambledUrl = downloadButton.attr('data-scrambled-url');
+        if (scrambledUrl) {
+          try {
+            link = atob(scrambledUrl);
+          } catch (e) {
+            console.log('Error decodificando scrambled URL:', e.message);
+          }
+        }
+        if (!link || link.includes('javascript:void(0)')) {
+          const htmlContent = res.data;
+          const linkMatch = htmlContent.match(/href="(https:\/\/download\d+\.mediafire\.com[^"]+)"/);
+          if (linkMatch) {
+            link = linkMatch[1];
+          } else {
+            const altMatch = htmlContent.match(/"(https:\/\/[^"]*mediafire[^"]*\.(zip|rar|pdf|jpg|jpeg|png|gif|mp4|mp3|exe|apk|txt)[^"]*)"/i);
+            if (altMatch) {
+              link = altMatch[1];
+            }
+          }
+        }
+      }
+    } catch (directError) {
+      const translateUrl = `https://www-mediafire-com.translate.goog/${url.replace('https://www.mediafire.com/', '')}?_x_tr_sl=en&_x_tr_tl=fr&_x_tr_hl=en&_x_tr_pto=wapp`;
+      res = await axios.get(translateUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }});
+      $ = cheerio.load(res.data);
+      const downloadButton = $('#downloadButton');
+      link = downloadButton.attr('href');
+      if (!link || link.includes('javascript:void(0)')) {
+        const scrambledUrl = downloadButton.attr('data-scrambled-url');
+        if (scrambledUrl) {
+          try {
+            link = atob(scrambledUrl);
+          } catch (e) {}
+        }
+      }
+    }
+    if (!link || link.includes('javascript:void(0)')) throw new Error('No se pudo encontrar el enlace de descarga válido');
+    const name = $('body > main > div.content > div.center > div > div.dl-btn-cont > div.dl-btn-labelWrap > div.promoDownloadName.notranslate > div').attr('title')?.replace(/\s+/g, '')?.replace(/\n/g, '') || $('.dl-btn-label').attr('title') || $('.filename').text().trim() || 'archivo_descargado';
+    const date = $('body > main > div.content > div.center > div > div.dl-info > ul > li:nth-child(2) > span').text().trim() || $('.details li:nth-child(2) span').text().trim() || 'Fecha no disponible';
+    const size = $('#downloadButton').text().replace('Download', '').replace(/[()]/g, '').replace(/\n/g, '').replace(/\s+/g, ' ').trim() || $('.details li:first-child span').text().trim() || 'Tamaño no disponible';
+    let mime = '';
+    const ext = name.split('.').pop()?.toLowerCase();
+    mime = lookup(ext) || 'application/octet-stream';
+    if (!link.startsWith('http')) throw new Error('Enlace de descarga inválido');
+    return { name, size, date, mime, link };
+  } catch (error) {
+    console.error('Error en mediafireDl:', error.message);
+    throw new Error(`Error al procesar MediaFire: ${error.message}`);
+  }
 }

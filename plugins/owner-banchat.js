@@ -1,9 +1,42 @@
-const handler = async (m) => {
+const handler = async (m, { conn }) => {
+  const datas = global;
+  const idioma = datas.db.data.users[m.sender].language || global.defaultLenguaje;
+  const _translate = JSON.parse(fs.readFileSync(`./src/languages/${idioma}.json`));
+  const tradutor = _translate.plugins.owner_banchat;
+
+  const normalizeJid = (jid) => jid.split('@')[0];
+  const thisBot = conn.user.jid;
+
+  const testi = await await m.mentionedJid
+  if (testi && testi.length > 0) {
+    const mentionedBot = testi[0];
+    console.log(m)
+    console.log(mentionedBot)
+    
+    if (normalizeJid(mentionedBot) !== normalizeJid(thisBot)) return;
+
+    if (global.db.data.chats[m.chat].isBanned) {
+      m.reply('⚠️ Este chat ya está baneado.');
+      return;
+    }
+
+    global.db.data.chats[m.chat].isBanned = true;
+    m.reply(`✅ Bot ${conn.user.name || 'actual'} baneado específicamente de este chat.`);
+    return;
+  }
+
+  if (global.db.data.chats[m.chat].isBanned) {
+    m.reply('⚠️ Este chat ya está baneado.');
+    return;
+  }
+
   global.db.data.chats[m.chat].isBanned = true;
-  m.reply('*[❗𝐈𝐍𝐅𝐎❗] 𝙴𝚂𝚃𝙴 𝙲𝙷𝙰𝚃 𝙵𝚄𝙴 𝙱𝙰𝙽𝙴𝙰𝙳𝙾 𝙲𝙾𝙽 𝙴𝚇𝙸𝚃𝙾*\n\n*—◉ 𝙴𝙻 𝙱𝙾𝚃 𝙽𝙾 𝚁𝙴𝙰𝙲𝙲𝙸𝙾𝙽𝙰𝚁𝙰 𝙰 𝙽𝙸𝙽𝙶𝚄𝙽 𝙲𝙾𝙼𝙰𝙽𝙳𝙾 𝙷𝙰𝚂𝚃𝙰 𝙳𝙴𝚂𝙱𝙰𝙽𝙴𝙰𝚁 𝙴𝚂𝚃𝙴 𝙲𝙷𝙰𝚃*');
+  m.reply(tradutor.texto1 || '✅ Chat baneado exitosamente.');
 };
-handler.help = ['banchat'];
+
+handler.help = ['banchat', 'banchat @bot'];
 handler.tags = ['owner'];
 handler.command = /^banchat$/i;
 handler.rowner = true;
 export default handler;
+
